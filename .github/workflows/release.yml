@@ -1,0 +1,43 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Create ZIP file
+        run: |
+          zip -r fiverr-conversation-extractor-${{ github.ref_name }}.zip . -x "*.git*" "*.github*" "docs/*" "*.zip"
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: fiverr-conversation-extractor-${{ github.ref_name }}.zip
+          name: Release ${{ github.ref_name }}
+          body: |
+            # Fiverr Conversation Extractor ${{ github.ref_name }}
+
+            Chrome extension for extracting and managing Fiverr inbox conversations.
+
+            ## Features
+            - Extract complete conversations with pagination support
+            - Process messages chronologically
+            - Convert conversations to Markdown format
+            - Support for message replies and context
+            - Progress tracking and error handling
+            - Clean and intuitive user interface
+
+            ## Technical Details
+            - Built with Manifest V3
+            - Efficient pagination mechanism
+            - Handles rate limiting
+            - Processes attachments and file sizes
+            - Maintains conversation chronology
