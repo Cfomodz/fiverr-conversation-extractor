@@ -1,0 +1,27 @@
+{
+  "llm": {
+    "provider": "deepseek",
+    "deepseek": {
+      "apiKey": "YOUR_DEEPSEEK_API_KEY",
+      "model": "deepseek-chat",
+      "baseUrl": "https://api.deepseek.com/v1"
+    },
+    "gemini": {
+      "apiKey": "YOUR_GEMINI_API_KEY",
+      "model": "gemini-2.0-flash-exp"
+    }
+  },
+  "search": {
+    "topK": 7,
+    "minScore": 0.1
+  },
+  "learning": {
+    "autoScopeThreshold": 20,
+    "topKForScopeCheck": 20
+  },
+  "project": {
+    "name": "My Fiverr Project",
+    "description": "Brief description of your current project for context",
+    "keywords": ["keyword1", "keyword2"]
+  }
+}

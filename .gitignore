@@ -37,3 +37,9 @@ coverage/
 # Conversation data files
 conversation*.json
 *conversation.json
+
+# Assistant config (contains API keys)
+assistant/config.json
+
+# Assistant data files (optional - uncomment to track learning)
+# assistant/data/*.json

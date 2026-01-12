@@ -2,6 +2,8 @@
 
 A Chrome extension that extracts and saves Fiverr inbox conversations with support for attachments, replies, and markdown export. Features include batch contact fetching, conversation downloading in both markdown and json formats.
 
+**🆕 Now includes an AI-powered assistant** that learns from your conversations and helps you respond to freelancers efficiently! See the [Assistant README](assistant/README.md) for details.
+
 ![GitHub](https://img.shields.io/github/license/royal-crisis/fiverr-conversation-extractor)
 ![Chrome Web Store](https://img.shields.io/badge/Platform-Chrome-green)
 ![Tags](https://img.shields.io/badge/Tags-Chat%20Export%20%7C%20Message%20Backup%20%7C%20Conversation%20History-blue)
@@ -128,8 +130,8 @@ For the complete extension UI mockup, see [Extension UI Design](docs/final-popup
 - 🌐 Multi-language support
 - 📊 Advanced analytics dashboard
 - 🔄 Real-time sync capabilities
-- 🤖 AI-powered conversation insights
-- 📦 Bulk export features (coming soon)
+- ✅ ~~AI-powered conversation insights~~ - **Now Available!** See [assistant/README.md](assistant/README.md)
+- ✅ ~~Bulk export features~~ - **Now Available!**
 
 ## Development
 
