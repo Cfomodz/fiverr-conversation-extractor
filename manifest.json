@@ -8,7 +8,9 @@
     "storage",
     "scripting",
     "downloads",
-    "tabs"
+    "tabs",
+    "notifications",
+    "alarms"
   ],
   "host_permissions": [
     "https://www.fiverr.com/*"

@@ -22,6 +22,7 @@ let JSZipPromise = null;
 try {
   // For MV3, we need to dynamically import JSZip
   importScripts('jszip.min.js');
+  importScripts('llm_utils.js');
   JSZipPromise = Promise.resolve(self.JSZip || JSZip);
 } catch (error) {
   console.warn('Could not load JSZip via importScripts, will try dynamic import:', error);
@@ -1848,4 +1849,267 @@ function downloadWithDataUrl(dataUrl, filename) {
       updateBulkExportStatus(`Export completed. Downloaded ${ongoingProcesses.bulkExport.completed} conversations.`, 'completed');
     }
   });
+}
+
+// ==========================================
+// ALWAYS RUNNING ASSISTANT LOGIC
+// ==========================================
+
+// Global state for assistant
+let assistantState = {
+    apiKey: null,
+    projectScope: '',
+    alwaysRunning: false,
+    learningMode: true,
+    myUsername: null,
+    processedMessageIds: new Set(),
+    ignoredUsers: new Set(),
+    qaDatabase: [], // Array of { question, answer, timestamp, context? }
+    conversationScopes: {} // username -> { inScope: boolean, checked: boolean }
+};
+
+// Load state on startup
+chrome.runtime.onStartup.addListener(loadAssistantState);
+chrome.runtime.onInstalled.addListener(async () => {
+    await loadAssistantState();
+    setupAlarm();
+});
+
+async function loadAssistantState() {
+    const result = await chrome.storage.local.get([
+        'apiKey', 'projectScope', 'alwaysRunning', 'learningMode', 
+        'processedMessageIds', 'ignoredUsers', 'qaDatabase', 'conversationScopes', 'myUsername'
+    ]);
+    
+    assistantState.apiKey = result.apiKey || null;
+    assistantState.projectScope = result.projectScope || '';
+    assistantState.alwaysRunning = result.alwaysRunning || false;
+    assistantState.learningMode = result.learningMode !== undefined ? result.learningMode : true;
+    assistantState.myUsername = result.myUsername || null; // Needs to be captured
+    
+    // Restore Sets/Maps
+    assistantState.processedMessageIds = new Set(result.processedMessageIds || []);
+    assistantState.ignoredUsers = new Set(result.ignoredUsers || []);
+    assistantState.qaDatabase = result.qaDatabase || [];
+    assistantState.conversationScopes = result.conversationScopes || {};
+    
+    updateAlarm();
+}
+
+// Update state when settings change
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type === 'SETTINGS_UPDATED') {
+        const { apiKey, projectScope, alwaysRunning, learningMode } = request.settings;
+        assistantState.apiKey = apiKey;
+        assistantState.projectScope = projectScope;
+        assistantState.alwaysRunning = alwaysRunning;
+        assistantState.learningMode = learningMode;
+        
+        updateAlarm();
+        saveAssistantState(); // Persist
+    }
+});
+
+function updateAlarm() {
+    if (assistantState.alwaysRunning) {
+        chrome.alarms.get('pollInbox', (alarm) => {
+            if (!alarm) {
+                chrome.alarms.create('pollInbox', { periodInMinutes: 2 }); // Poll every 2 mins
+            }
+        });
+    } else {
+        chrome.alarms.clear('pollInbox');
+    }
+}
+
+function setupAlarm() {
+    updateAlarm();
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === 'pollInbox') {
+        pollInbox();
+    }
+});
+
+async function saveAssistantState() {
+    await chrome.storage.local.set({
+        processedMessageIds: Array.from(assistantState.processedMessageIds),
+        ignoredUsers: Array.from(assistantState.ignoredUsers),
+        qaDatabase: assistantState.qaDatabase,
+        conversationScopes: assistantState.conversationScopes
+    });
+}
+
+async function pollInbox() {
+    if (!assistantState.apiKey) return; // Can't do much without API key
+
+    console.log('Polling inbox...');
+    
+    try {
+        const response = await fetch('https://www.fiverr.com/inbox/contacts', {
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        if (!response.ok) return; // Not logged in or error
+        
+        const contacts = await response.json();
+        if (!contacts || !Array.isArray(contacts)) return;
+
+        // Iterate contacts
+        // Limit to 10 recent contacts to avoid overloading
+        for (const contact of contacts.slice(0, 10)) {
+            if (assistantState.ignoredUsers.has(contact.username)) continue;
+            
+            await processConversation(contact.username);
+        }
+    } catch (e) {
+        console.error('Polling failed:', e);
+    }
+}
+
+async function processConversation(username) {
+    // Fetch conversation
+    const url = `https://www.fiverr.com/inbox/contacts/${username}/conversation`;
+    try {
+        const response = await fetch(url, { headers: { 'Accept': 'application/json' }});
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        if (!data.messages) return;
+
+        // Capture myUsername if not set
+        if (!assistantState.myUsername && data.messages.length > 0) {
+            const first = data.messages[0];
+            if (first.sender === username) assistantState.myUsername = first.recipient;
+            else assistantState.myUsername = first.sender;
+            chrome.storage.local.set({ myUsername: assistantState.myUsername });
+        }
+
+        const messages = data.messages.sort((a, b) => a.createdAt - b.createdAt);
+        
+        // Scope Check Logic
+        let scope = assistantState.conversationScopes[username];
+        if (!scope) {
+            // New conversation found. Mark pending.
+            // In a real app, we'd use LLM here if DB is large enough.
+            if (assistantState.qaDatabase.length >= 20) {
+                 const inScope = await checkScopeLLM(messages, username);
+                 scope = { inScope, checked: true };
+            } else {
+                 scope = { inScope: true, checked: false }; // Assume true until marked false
+            }
+            assistantState.conversationScopes[username] = scope;
+            saveAssistantState();
+        }
+        
+        if (!scope.inScope) return; // Ignore
+
+        // Iterate messages
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+            const msgId = msg._id || msg.id || `${msg.sender}_${msg.createdAt}`; // Fallback ID
+
+            if (assistantState.processedMessageIds.has(msgId)) continue;
+            
+            // New message!
+            
+            // LEARNING: If MY message (msg.sender != username), check previous PARTNER message
+            if (msg.sender !== username) {
+                if (i > 0 && messages[i-1].sender === username) {
+                    const prevMsg = messages[i-1];
+                    await learnFromInteraction(prevMsg.body, msg.body, username);
+                }
+            } 
+            // DRAFTING: If PARTNER message (msg.sender == username) and it's the last one
+            else if (msg.sender === username && i === messages.length - 1) {
+                await draftResponse(msg.body, username);
+            }
+
+            assistantState.processedMessageIds.add(msgId);
+        }
+        
+        saveAssistantState();
+
+    } catch (e) {
+        console.error(`Error processing conversation ${username}:`, e);
+    }
+}
+
+async function learnFromInteraction(question, answer, username) {
+    if (!assistantState.learningMode) return;
+    
+    // Check if duplicate
+    const relevant = findRelevantEntries(question, assistantState.qaDatabase, 1);
+    if (relevant.length > 0 && relevant[0].score > 0.9) {
+        console.log('Skipping duplicate learning');
+        return;
+    }
+
+    // Add to DB
+    assistantState.qaDatabase.push({
+        id: Date.now().toString(),
+        question: question,
+        answer: answer,
+        timestamp: Date.now(),
+        sourceUser: username
+    });
+    console.log('Learned new Q&A pair');
+}
+
+async function checkScopeLLM(messages, username) {
+    // Construct prompt
+    const transcript = messages.slice(-10).map(m => `${m.sender}: ${m.body}`).join('\n');
+    const prompt = `
+    Project Scope: ${assistantState.projectScope}
+    
+    Conversation with ${username}:
+    ${transcript}
+    
+    Is this conversation related to the project scope? Reply with YES or NO.
+    `;
+    
+    const res = await callLLM(prompt, assistantState.apiKey);
+    return res.text && res.text.toUpperCase().includes('YES');
+}
+
+async function draftResponse(lastMessage, username) {
+    // 1. Search DB
+    const relevant = findRelevantEntries(lastMessage, assistantState.qaDatabase, 5);
+    if (relevant.length === 0) return; // Nothing to say
+
+    // 2. Draft
+    const context = relevant.map(e => `Q: ${e.question}\nA: ${e.answer}`).join('\n\n');
+    const prompt = `
+    You are an assistant for a Fiverr project.
+    Project Scope: ${assistantState.projectScope}
+    
+    Relevant Q&A from past conversations:
+    ${context}
+    
+    Freelancer (${username}) says: "${lastMessage}"
+    
+    Draft a response based on the relevant Q&A. Be concise and professional.
+    `;
+    
+    const res = await callLLM(prompt, assistantState.apiKey);
+    
+    if (res.text) {
+        // Store draft
+        const draft = {
+            text: res.text,
+            timestamp: Date.now()
+        };
+        chrome.storage.local.set({
+            [`draft_${username}`]: draft
+        });
+        
+        // Notify user
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'images/extension-preview.png',
+            title: `Draft for ${username}`,
+            message: res.text.substring(0, 50) + '...'
+        });
+    }
 }
