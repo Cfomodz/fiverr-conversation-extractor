@@ -641,41 +641,45 @@ function updateUIWithStatus(status) {
 
     // Update contacts UI
     if (contactsStatus) {
-        const contactsButton = document.getElementById('fetchContactsButton');
+        const contactsButton = document.getElementById('fetchContactsBtn');
         const contactsProgress = document.getElementById('contactsProgress');
         
-        if (contactsStatus.status === 'running') {
-            contactsButton.disabled = true;
-            contactsProgress.textContent = contactsStatus.progress || 'Processing...';
-            contactsProgress.style.display = 'block';
-        } else if (contactsStatus.status === 'completed') {
-            contactsButton.disabled = false;
-            contactsProgress.textContent = contactsStatus.message || 'Completed!';
-            setTimeout(() => {
-                contactsProgress.style.display = 'none';
-            }, 3000);
+        if (contactsButton && contactsProgress) {
+            if (contactsStatus.status === 'running') {
+                contactsButton.disabled = true;
+                contactsProgress.textContent = contactsStatus.progress || 'Processing...';
+                contactsProgress.style.display = 'block';
+            } else if (contactsStatus.status === 'completed') {
+                contactsButton.disabled = false;
+                contactsProgress.textContent = contactsStatus.message || 'Completed!';
+                setTimeout(() => {
+                    contactsProgress.style.display = 'none';
+                }, 3000);
+            }
         }
     }
 
     // Update conversation UI
     if (conversationStatus) {
-        const extractButton = document.getElementById('extractButton');
+        const extractButton = document.getElementById('extractBtn');
         const extractionProgress = document.getElementById('extractionProgress');
         
-        if (conversationStatus.status === 'running') {
-            extractButton.disabled = true;
-            extractionProgress.textContent = conversationStatus.progress || 'Processing...';
-            extractionProgress.style.display = 'block';
-        } else if (conversationStatus.status === 'completed') {
-            extractButton.disabled = false;
-            extractionProgress.textContent = conversationStatus.message || 'Completed!';
-            setTimeout(() => {
-                extractionProgress.style.display = 'none';
-            }, 3000);
-        } else if (conversationStatus.status === 'error') {
-            extractButton.disabled = false;
-            extractionProgress.textContent = `Error: ${conversationStatus.error}`;
-            extractionProgress.style.display = 'block';
+        if (extractButton && extractionProgress) {
+            if (conversationStatus.status === 'running') {
+                extractButton.disabled = true;
+                extractionProgress.textContent = conversationStatus.progress || 'Processing...';
+                extractionProgress.style.display = 'block';
+            } else if (conversationStatus.status === 'completed') {
+                extractButton.disabled = false;
+                extractionProgress.textContent = conversationStatus.message || 'Completed!';
+                setTimeout(() => {
+                    extractionProgress.style.display = 'none';
+                }, 3000);
+            } else if (conversationStatus.status === 'error') {
+                extractButton.disabled = false;
+                extractionProgress.textContent = `Error: ${conversationStatus.error}`;
+                extractionProgress.style.display = 'block';
+            }
         }
     }
 }
