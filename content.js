@@ -499,3 +499,81 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 });
+
+// ==========================================
+// ASSISTANT UI INTEGRATION
+// ==========================================
+
+setInterval(checkForDrafts, 3000);
+
+function checkForDrafts() {
+    const url = window.location.href;
+    const match = url.match(/\/inbox\/([^\/\?]+)/);
+    if (!match) return;
+    
+    const username = match[1];
+    
+    chrome.storage.local.get([`draft_${username}`], (result) => {
+        const draft = result[`draft_${username}`];
+        if (draft && Date.now() - draft.timestamp < 15 * 60 * 1000) { // Valid for 15 mins
+            showDraftSuggestion(draft.text, username);
+        }
+    });
+}
+
+function showDraftSuggestion(text, username) {
+    if (document.getElementById('ai-draft-suggestion')) return; // Already showing
+    
+    const container = document.createElement('div');
+    container.id = 'ai-draft-suggestion';
+    container.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 300px;
+        background: #fff;
+        border: 1px solid #1dbf73;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 15px;
+        z-index: 9999;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    `;
+    
+    container.innerHTML = `
+        <div style="font-weight: bold; color: #1dbf73; margin-bottom: 8px;">AI Draft Suggestion</div>
+        <div style="font-size: 13px; color: #333; margin-bottom: 12px; max-height: 150px; overflow-y: auto;">${text.replace(/\n/g, '<br>')}</div>
+        <div style="display: flex; gap: 8px;">
+            <button id="use-draft-btn" style="flex: 1; padding: 6px; background: #1dbf73; color: white; border: none; border-radius: 4px; cursor: pointer;">Use Draft</button>
+            <button id="dismiss-draft-btn" style="padding: 6px 12px; background: #f5f5f5; color: #333; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">Dismiss</button>
+        </div>
+    `;
+    
+    document.body.appendChild(container);
+    
+    document.getElementById('use-draft-btn').addEventListener('click', () => {
+        // Try to find the input box - this selector might need adjustment based on Fiverr's DOM
+        const inputBox = document.querySelector('textarea.message-input') || document.querySelector('textarea');
+        if (inputBox) {
+            inputBox.value = text;
+            inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+            inputBox.focus();
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(text);
+            alert('Draft copied to clipboard!');
+        }
+        removeDraft(username);
+    });
+    
+    document.getElementById('dismiss-draft-btn').addEventListener('click', () => {
+        removeDraft(username);
+    });
+}
+
+function removeDraft(username) {
+    const el = document.getElementById('ai-draft-suggestion');
+    if (el) el.remove();
+    // Clear from storage so it doesn't reappear immediately
+    chrome.storage.local.remove(`draft_${username}`);
+}

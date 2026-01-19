@@ -17,19 +17,11 @@ let ongoingProcesses = {
     }
 };
 
-// Attempt to load JSZip early for background usage
-let JSZipPromise = null;
+// Load LLM helper utilities for assistant features.
 try {
-  // For MV3, we need to dynamically import JSZip
-  importScripts('jszip.min.js');
-  JSZipPromise = Promise.resolve(self.JSZip || JSZip);
+  importScripts('llm_utils.js');
 } catch (error) {
-  console.warn('Could not load JSZip via importScripts, will try dynamic import:', error);
-  JSZipPromise = new Promise((resolve, reject) => {
-    // We'll try to load it dynamically when needed
-    console.log('JSZip will be loaded dynamically when needed');
-    resolve(null);
-  });
+  console.warn('Failed to load llm_utils.js:', error);
 }
 
 // ========== ADDED FUNCTIONS FROM CONTENT.JS ==========
@@ -1618,17 +1610,6 @@ async function finalizeBulkExport() {
   }
 }
 
-// Helper function to convert ArrayBuffer to base64
-function arrayBufferToBase64(buffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
 // Function to update the bulk export status
 function updateBulkExportStatus(message, status = null) {
   // Get a reference to the bulk export state
@@ -1681,171 +1662,265 @@ function updateBulkExportStatus(message, status = null) {
   });
 }
 
-// Helper function to format dates consistently
-function formatDate(timestamp) {
-  try {
-    let date;
+// ==========================================
+// ALWAYS RUNNING ASSISTANT LOGIC
+// ==========================================
+
+// Global state for assistant
+let assistantState = {
+    apiKey: null,
+    projectScope: '',
+    alwaysRunning: false,
+    learningMode: true,
+    myUsername: null,
+    processedMessageIds: new Set(),
+    ignoredUsers: new Set(),
+    qaDatabase: [], // Array of { question, answer, timestamp, context? }
+    conversationScopes: {} // username -> { inScope: boolean, checked: boolean }
+};
+
+// Load state on startup
+chrome.runtime.onStartup.addListener(loadAssistantState);
+chrome.runtime.onInstalled.addListener(async () => {
+    await loadAssistantState();
+    setupAlarm();
+});
+
+async function loadAssistantState() {
+    const result = await chrome.storage.local.get([
+        'apiKey', 'projectScope', 'alwaysRunning', 'learningMode', 
+        'processedMessageIds', 'ignoredUsers', 'qaDatabase', 'conversationScopes', 'myUsername'
+    ]);
     
-    // Handle different timestamp formats
-    if (!timestamp) {
-      return 'Unknown Date';
+    assistantState.apiKey = result.apiKey || null;
+    assistantState.projectScope = result.projectScope || '';
+    assistantState.alwaysRunning = result.alwaysRunning || false;
+    assistantState.learningMode = result.learningMode !== undefined ? result.learningMode : true;
+    assistantState.myUsername = result.myUsername || null; // Needs to be captured
+    
+    // Restore Sets/Maps
+    assistantState.processedMessageIds = new Set(result.processedMessageIds || []);
+    assistantState.ignoredUsers = new Set(result.ignoredUsers || []);
+    assistantState.qaDatabase = result.qaDatabase || [];
+    assistantState.conversationScopes = result.conversationScopes || {};
+    
+    updateAlarm();
+}
+
+// Update state when settings change
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type === 'SETTINGS_UPDATED') {
+        const { apiKey, projectScope, alwaysRunning, learningMode } = request.settings;
+        assistantState.apiKey = apiKey;
+        assistantState.projectScope = projectScope;
+        assistantState.alwaysRunning = alwaysRunning;
+        assistantState.learningMode = learningMode;
+        
+        updateAlarm();
+        saveAssistantState(); // Persist
     }
-    
-    // Try to parse as milliseconds since epoch (number or string)
-    if (!isNaN(Number(timestamp))) {
-      date = new Date(Number(timestamp));
+});
+
+function updateAlarm() {
+    if (assistantState.alwaysRunning) {
+        chrome.alarms.get('pollInbox', (alarm) => {
+            if (!alarm) {
+                chrome.alarms.create('pollInbox', { periodInMinutes: 2 }); // Poll every 2 mins
+            }
+        });
     } else {
-      // Try to parse as ISO string or other date format
-      date = new Date(timestamp);
+        chrome.alarms.clear('pollInbox');
     }
-    
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return 'Unknown Date';
+}
+
+function setupAlarm() {
+    updateAlarm();
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === 'pollInbox') {
+        pollInbox();
     }
-    
-    // Format the date consistently
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    const time = date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
-      second: '2-digit', 
-      hour12: true 
+});
+
+async function saveAssistantState() {
+    await chrome.storage.local.set({
+        processedMessageIds: Array.from(assistantState.processedMessageIds),
+        ignoredUsers: Array.from(assistantState.ignoredUsers),
+        qaDatabase: assistantState.qaDatabase,
+        conversationScopes: assistantState.conversationScopes
     });
-    
-    // Use a consistent format (DD/MM/YYYY)
-    return `${day}/${month}/${year}, ${time}`;
-  } catch (e) {
-    console.warn('Error formatting date:', e, timestamp);
-    return 'Unknown Date';
-  }
 }
 
-// Helper function to convert conversation data to markdown
-async function convertToMarkdown(data) {
-  try {
-    if (!data || !data.messages) {
-      return '# Conversation Export\n\nNo messages found.';
-    }
+async function pollInbox() {
+    if (!assistantState.apiKey) return; // Can't do much without API key
+
+    console.log('Polling inbox...');
     
-    let markdown = `# Conversation with ${data.username}\n\n`;
-    
-    // Add timestamp
-    markdown += `Exported on: ${formatDate(Date.now())}\n\n`;
-    
-    // Process each message
-    for (const message of data.messages) {
-      // Format the date using our helper function
-      const timestampStr = formatDate(message.timestamp || message.createdAt);
-      
-      // Add sender info with formatting
-      const sender = message.sender === 'buyer' ? 'You' : data.username;
-      markdown += `## ${sender} (${timestampStr})\n\n`;
-      
-      // Add message text
-      if (message.text || message.body) {
-        markdown += `${message.text || message.body}\n\n`;
-      }
-      
-      // Add attachments if present
-      if (message.attachments && message.attachments.length > 0) {
-        markdown += '**Attachments:**\n\n';
-        for (const attachment of message.attachments) {
-          const filename = attachment.filename || attachment.file_name || attachment.name || 'Attachment';
-          markdown += `- ${filename}\n`;
+    try {
+        const response = await fetch('https://www.fiverr.com/inbox/contacts', {
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        if (!response.ok) return; // Not logged in or error
+        
+        const contacts = await response.json();
+        if (!contacts || !Array.isArray(contacts)) return;
+
+        // Iterate contacts
+        // Limit to 10 recent contacts to avoid overloading
+        for (const contact of contacts.slice(0, 10)) {
+            if (assistantState.ignoredUsers.has(contact.username)) continue;
+            
+            await processConversation(contact.username);
         }
-        markdown += '\n';
-      }
+    } catch (e) {
+        console.error('Polling failed:', e);
     }
-    
-    return markdown;
-  } catch (error) {
-    console.error('Error converting to markdown:', error);
-    return `# Error in Conversion\n\nAn error occurred: ${error.message}`;
-  }
 }
 
-// Helper function to process attachments for export
-async function processAttachmentsForExport(conversation, username, zipFolder) {
-  if (!conversation || !conversation.messages) return;
-  
-  const attachmentPromises = [];
-  
-  // Process each message for attachments
-  for (const message of conversation.messages) {
-    if (message.attachments && message.attachments.length > 0) {
-      for (const attachment of message.attachments) {
-        if (attachment.downloadUrl) {
-          console.log(`Processing attachment for ${username}:`, attachment);
-          const promise = fetch(attachment.downloadUrl)
-            .then(response => {
-              if (!response.ok) throw new Error(`Failed to fetch attachment: ${response.statusText}`);
-              return response.blob();
-            })
-            .then(blob => {
-              // Create a safe filename using the correct property
-              const filename = attachment.filename || 
-                             attachment.file_name || 
-                             attachment.downloadUrl.split('/').pop() || 
-                             `attachment-${Date.now()}`;
-              
-              // Add to zip in a folder structure by username
-              const safePath = `${username}/${filename}`.replace(/[<>:"/\\|?*]/g, '_');
-              console.log(`Adding attachment to zip: ${safePath}`);
-              zipFolder.file(safePath, blob);
-            })
-            .catch(error => {
-              console.error(`Error processing attachment for ${username}:`, error);
-            });
-          
-          attachmentPromises.push(promise);
+async function processConversation(username) {
+    // Fetch conversation
+    const url = `https://www.fiverr.com/inbox/contacts/${username}/conversation`;
+    try {
+        const response = await fetch(url, { headers: { 'Accept': 'application/json' }});
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        if (!data.messages) return;
+
+        // Capture myUsername if not set
+        if (!assistantState.myUsername && data.messages.length > 0) {
+            const first = data.messages[0];
+            if (first.sender === username) assistantState.myUsername = first.recipient;
+            else assistantState.myUsername = first.sender;
+            chrome.storage.local.set({ myUsername: assistantState.myUsername });
         }
-      }
+
+        const messages = data.messages.sort((a, b) => a.createdAt - b.createdAt);
+        
+        // Scope Check Logic
+        let scope = assistantState.conversationScopes[username];
+        if (!scope) {
+            // New conversation found. Mark pending.
+            // In a real app, we'd use LLM here if DB is large enough.
+            if (assistantState.qaDatabase.length >= 20) {
+                 const inScope = await checkScopeLLM(messages, username);
+                 scope = { inScope, checked: true };
+            } else {
+                 scope = { inScope: true, checked: false }; // Assume true until marked false
+            }
+            assistantState.conversationScopes[username] = scope;
+            saveAssistantState();
+        }
+        
+        if (!scope.inScope) return; // Ignore
+
+        // Iterate messages
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+            const msgId = msg._id || msg.id || `${msg.sender}_${msg.createdAt}`; // Fallback ID
+
+            if (assistantState.processedMessageIds.has(msgId)) continue;
+            
+            // New message!
+            
+            // LEARNING: If MY message (msg.sender != username), check previous PARTNER message
+            if (msg.sender !== username) {
+                if (i > 0 && messages[i-1].sender === username) {
+                    const prevMsg = messages[i-1];
+                    await learnFromInteraction(prevMsg.body, msg.body, username);
+                }
+            } 
+            // DRAFTING: If PARTNER message (msg.sender == username) and it's the last one
+            else if (msg.sender === username && i === messages.length - 1) {
+                await draftResponse(msg.body, username);
+            }
+
+            assistantState.processedMessageIds.add(msgId);
+        }
+        
+        saveAssistantState();
+
+    } catch (e) {
+        console.error(`Error processing conversation ${username}:`, e);
     }
-  }
-  
-  // Wait for all attachment downloads to complete
-  if (attachmentPromises.length > 0) {
-    updateBulkExportStatus(`Downloading ${attachmentPromises.length} attachments for ${username}...`);
-    await Promise.allSettled(attachmentPromises);
-  }
 }
 
-// Helper function to convert a blob to a chunked data URL
-async function blobToChunkedDataUrl(blob) {
-  // Split the blob into manageable chunks
-  const CHUNK_SIZE = 1024 * 1024; // 1MB chunks for processing
-  const chunks = Math.ceil(blob.size / CHUNK_SIZE);
-  let base64Data = '';
-  
-  for (let i = 0; i < chunks; i++) {
-    const start = i * CHUNK_SIZE;
-    const end = Math.min(start + CHUNK_SIZE, blob.size);
-    const chunk = blob.slice(start, end);
+async function learnFromInteraction(question, answer, username) {
+    if (!assistantState.learningMode) return;
     
-    // Convert chunk to base64
-    const arrayBuffer = await chunk.arrayBuffer();
-    base64Data += arrayBufferToBase64(arrayBuffer);
-  }
-  
-  return `data:application/zip;base64,${base64Data}`;
+    // Check if duplicate
+    const relevant = findRelevantEntries(question, assistantState.qaDatabase, 1);
+    if (relevant.length > 0 && relevant[0].score > 0.9) {
+        console.log('Skipping duplicate learning');
+        return;
+    }
+
+    // Add to DB
+    assistantState.qaDatabase.push({
+        id: Date.now().toString(),
+        question: question,
+        answer: answer,
+        timestamp: Date.now(),
+        sourceUser: username
+    });
+    console.log('Learned new Q&A pair');
 }
 
-// Helper function to download using a data URL
-function downloadWithDataUrl(dataUrl, filename) {
-  chrome.downloads.download({
-    url: dataUrl,
-    filename: filename,
-    saveAs: true
-  }, (downloadId) => {
-    if (chrome.runtime.lastError) {
-      console.error('Download error:', chrome.runtime.lastError);
-      updateBulkExportStatus(`Error downloading: ${chrome.runtime.lastError.message}`, 'error');
-    } else {
-      // Update status
-      updateBulkExportStatus(`Export completed. Downloaded ${ongoingProcesses.bulkExport.completed} conversations.`, 'completed');
+async function checkScopeLLM(messages, username) {
+    // Construct prompt
+    const transcript = messages.slice(-10).map(m => `${m.sender}: ${m.body}`).join('\n');
+    const prompt = `
+    Project Scope: ${assistantState.projectScope}
+    
+    Conversation with ${username}:
+    ${transcript}
+    
+    Is this conversation related to the project scope? Reply with YES or NO.
+    `;
+    
+    const res = await callLLM(prompt, assistantState.apiKey);
+    return res.text && res.text.toUpperCase().includes('YES');
+}
+
+async function draftResponse(lastMessage, username) {
+    // 1. Search DB
+    const relevant = findRelevantEntries(lastMessage, assistantState.qaDatabase, 5);
+    if (relevant.length === 0) return; // Nothing to say
+
+    // 2. Draft
+    const context = relevant.map(e => `Q: ${e.question}\nA: ${e.answer}`).join('\n\n');
+    const prompt = `
+    You are an assistant for a Fiverr project.
+    Project Scope: ${assistantState.projectScope}
+    
+    Relevant Q&A from past conversations:
+    ${context}
+    
+    Freelancer (${username}) says: "${lastMessage}"
+    
+    Draft a response based on the relevant Q&A. Be concise and professional.
+    `;
+    
+    const res = await callLLM(prompt, assistantState.apiKey);
+    
+    if (res.text) {
+        // Store draft
+        const draft = {
+            text: res.text,
+            timestamp: Date.now()
+        };
+        chrome.storage.local.set({
+            [`draft_${username}`]: draft
+        });
+        
+        // Notify user
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'images/extension-preview.png',
+            title: `Draft for ${username}`,
+            message: res.text.substring(0, 50) + '...'
+        });
     }
-  });
 }

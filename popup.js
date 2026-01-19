@@ -641,41 +641,45 @@ function updateUIWithStatus(status) {
 
     // Update contacts UI
     if (contactsStatus) {
-        const contactsButton = document.getElementById('fetchContactsButton');
+        const contactsButton = document.getElementById('fetchContactsBtn');
         const contactsProgress = document.getElementById('contactsProgress');
         
-        if (contactsStatus.status === 'running') {
-            contactsButton.disabled = true;
-            contactsProgress.textContent = contactsStatus.progress || 'Processing...';
-            contactsProgress.style.display = 'block';
-        } else if (contactsStatus.status === 'completed') {
-            contactsButton.disabled = false;
-            contactsProgress.textContent = contactsStatus.message || 'Completed!';
-            setTimeout(() => {
-                contactsProgress.style.display = 'none';
-            }, 3000);
+        if (contactsButton && contactsProgress) {
+            if (contactsStatus.status === 'running') {
+                contactsButton.disabled = true;
+                contactsProgress.textContent = contactsStatus.progress || 'Processing...';
+                contactsProgress.style.display = 'block';
+            } else if (contactsStatus.status === 'completed') {
+                contactsButton.disabled = false;
+                contactsProgress.textContent = contactsStatus.message || 'Completed!';
+                setTimeout(() => {
+                    contactsProgress.style.display = 'none';
+                }, 3000);
+            }
         }
     }
 
     // Update conversation UI
     if (conversationStatus) {
-        const extractButton = document.getElementById('extractButton');
+        const extractButton = document.getElementById('extractBtn');
         const extractionProgress = document.getElementById('extractionProgress');
         
-        if (conversationStatus.status === 'running') {
-            extractButton.disabled = true;
-            extractionProgress.textContent = conversationStatus.progress || 'Processing...';
-            extractionProgress.style.display = 'block';
-        } else if (conversationStatus.status === 'completed') {
-            extractButton.disabled = false;
-            extractionProgress.textContent = conversationStatus.message || 'Completed!';
-            setTimeout(() => {
-                extractionProgress.style.display = 'none';
-            }, 3000);
-        } else if (conversationStatus.status === 'error') {
-            extractButton.disabled = false;
-            extractionProgress.textContent = `Error: ${conversationStatus.error}`;
-            extractionProgress.style.display = 'block';
+        if (extractButton && extractionProgress) {
+            if (conversationStatus.status === 'running') {
+                extractButton.disabled = true;
+                extractionProgress.textContent = conversationStatus.progress || 'Processing...';
+                extractionProgress.style.display = 'block';
+            } else if (conversationStatus.status === 'completed') {
+                extractButton.disabled = false;
+                extractionProgress.textContent = conversationStatus.message || 'Completed!';
+                setTimeout(() => {
+                    extractionProgress.style.display = 'none';
+                }, 3000);
+            } else if (conversationStatus.status === 'error') {
+                extractButton.disabled = false;
+                extractionProgress.textContent = `Error: ${conversationStatus.error}`;
+                extractionProgress.style.display = 'block';
+            }
         }
     }
 }
@@ -742,14 +746,23 @@ function initializeSettings() {
   const saveBtn = document.getElementById('saveBtn');
   const dateFormatSelect = document.getElementById('dateFormat');
   const attachmentSortSelect = document.getElementById('attachmentSort');
+  const apiKeyInput = document.getElementById('apiKey');
+  const projectScopeInput = document.getElementById('projectScope');
+  const alwaysRunningInput = document.getElementById('alwaysRunning');
+  const learningModeInput = document.getElementById('learningMode');
 
   // Load current settings
-  chrome.storage.local.get(['dateFormat', 'attachmentSort'], function(result) {
+  chrome.storage.local.get(['dateFormat', 'attachmentSort', 'apiKey', 'projectScope', 'alwaysRunning', 'learningMode'], function(result) {
     const savedFormat = result.dateFormat || 'DD/MM/YYYY';
     dateFormatSelect.value = savedFormat;
     
     const savedSort = result.attachmentSort || 'newest';
     attachmentSortSelect.value = savedSort;
+
+    apiKeyInput.value = result.apiKey || '';
+    projectScopeInput.value = result.projectScope || '';
+    alwaysRunningInput.checked = result.alwaysRunning !== undefined ? result.alwaysRunning : false;
+    learningModeInput.checked = result.learningMode !== undefined ? result.learningMode : true;
     
     // Set defaults if not set
     if (!result.dateFormat) {
@@ -780,11 +793,25 @@ function initializeSettings() {
   saveBtn.addEventListener('click', async () => {
     const newFormat = dateFormatSelect.value;
     const newSortOrder = attachmentSortSelect.value;
+    const apiKey = apiKeyInput.value;
+    const projectScope = projectScopeInput.value;
+    const alwaysRunning = alwaysRunningInput.checked;
+    const learningMode = learningModeInput.checked;
     
     chrome.storage.local.set({ 
       dateFormat: newFormat,
-      attachmentSort: newSortOrder 
+      attachmentSort: newSortOrder,
+      apiKey: apiKey,
+      projectScope: projectScope,
+      alwaysRunning: alwaysRunning,
+      learningMode: learningMode
     }, async () => {
+      // Send message to background to update state
+      chrome.runtime.sendMessage({ 
+          type: 'SETTINGS_UPDATED',
+          settings: { apiKey, projectScope, alwaysRunning, learningMode }
+      });
+
       // Show confirmation
       showNotification('success', 'Settings Saved', 'Your preferences have been updated.');
       

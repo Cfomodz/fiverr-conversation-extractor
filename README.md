@@ -139,6 +139,10 @@ The extension uses:
 - Modern JavaScript (ES6+)
 - Markdown for conversation export
 
+## Testing (No Browser Required)
+
+- Run `python3 scripts/validate_extension.py` to validate `manifest.json` and referenced files.
+
 ## Support My Work
 
 <div align="center">
