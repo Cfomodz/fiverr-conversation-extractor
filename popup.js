@@ -746,14 +746,23 @@ function initializeSettings() {
   const saveBtn = document.getElementById('saveBtn');
   const dateFormatSelect = document.getElementById('dateFormat');
   const attachmentSortSelect = document.getElementById('attachmentSort');
+  const apiKeyInput = document.getElementById('apiKey');
+  const projectScopeInput = document.getElementById('projectScope');
+  const alwaysRunningInput = document.getElementById('alwaysRunning');
+  const learningModeInput = document.getElementById('learningMode');
 
   // Load current settings
-  chrome.storage.local.get(['dateFormat', 'attachmentSort'], function(result) {
+  chrome.storage.local.get(['dateFormat', 'attachmentSort', 'apiKey', 'projectScope', 'alwaysRunning', 'learningMode'], function(result) {
     const savedFormat = result.dateFormat || 'DD/MM/YYYY';
     dateFormatSelect.value = savedFormat;
     
     const savedSort = result.attachmentSort || 'newest';
     attachmentSortSelect.value = savedSort;
+
+    apiKeyInput.value = result.apiKey || '';
+    projectScopeInput.value = result.projectScope || '';
+    alwaysRunningInput.checked = result.alwaysRunning !== undefined ? result.alwaysRunning : false;
+    learningModeInput.checked = result.learningMode !== undefined ? result.learningMode : true;
     
     // Set defaults if not set
     if (!result.dateFormat) {
@@ -784,11 +793,25 @@ function initializeSettings() {
   saveBtn.addEventListener('click', async () => {
     const newFormat = dateFormatSelect.value;
     const newSortOrder = attachmentSortSelect.value;
+    const apiKey = apiKeyInput.value;
+    const projectScope = projectScopeInput.value;
+    const alwaysRunning = alwaysRunningInput.checked;
+    const learningMode = learningModeInput.checked;
     
     chrome.storage.local.set({ 
       dateFormat: newFormat,
-      attachmentSort: newSortOrder 
+      attachmentSort: newSortOrder,
+      apiKey: apiKey,
+      projectScope: projectScope,
+      alwaysRunning: alwaysRunning,
+      learningMode: learningMode
     }, async () => {
+      // Send message to background to update state
+      chrome.runtime.sendMessage({ 
+          type: 'SETTINGS_UPDATED',
+          settings: { apiKey, projectScope, alwaysRunning, learningMode }
+      });
+
       // Show confirmation
       showNotification('success', 'Settings Saved', 'Your preferences have been updated.');
       

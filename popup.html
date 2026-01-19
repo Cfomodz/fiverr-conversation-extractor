@@ -808,12 +808,30 @@
         <option value="DD-MM-YYYY">DD-MM-YYYY, HH:mm:ss AM</option>
       </select>
     </div>
-        <div class="settings-group">
-          <label for="attachmentSort">Attachment Sort Order:</label>
-          <select id="attachmentSort">
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
+    <div class="settings-group">
+      <label for="attachmentSort">Attachment Sort Order:</label>
+      <select id="attachmentSort">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
       </select>
+    </div>
+    <div class="settings-group">
+      <label for="apiKey">LLM API Key (Gemini/DeepSeek):</label>
+      <input type="password" id="apiKey" placeholder="Enter API Key" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+    </div>
+    <div class="settings-group">
+      <label for="projectScope">Project Scope/Context:</label>
+      <textarea id="projectScope" placeholder="Describe your project here..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; min-height: 80px;"></textarea>
+    </div>
+    <div class="settings-group">
+      <label>
+        <input type="checkbox" id="alwaysRunning"> Always Running (Background Monitoring)
+      </label>
+    </div>
+    <div class="settings-group">
+      <label>
+        <input type="checkbox" id="learningMode" checked> Learning Mode (Auto-save Q&A)
+      </label>
     </div>
     <div class="modal-buttons">
       <button id="cancelBtn" class="modal-btn cancel-btn">Cancel</button>
