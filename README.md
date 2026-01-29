@@ -1,157 +1,164 @@
-# Fiverr Conversation Extractor &nbsp;&nbsp; [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-☕-orange?style=for-the-badge)](https://www.buymeacoffee.com/ianwaithaka)
+# Free Right Now
 
-A Chrome extension that extracts and saves Fiverr inbox conversations with support for attachments, replies, and markdown export. Features include batch contact fetching, conversation downloading in both markdown and json formats.
+> Signal-driven availability - know when someone is free without interrupting them.
 
-![GitHub](https://img.shields.io/github/license/royal-crisis/fiverr-conversation-extractor)
-![Chrome Web Store](https://img.shields.io/badge/Platform-Chrome-green)
-![Tags](https://img.shields.io/badge/Tags-Chat%20Export%20%7C%20Message%20Backup%20%7C%20Conversation%20History-blue)
+**Free Right Now** is an alternative to traditional calendar-based scheduling. Instead of asking "is now a good time?" or checking rigid calendar blocks, it learns from your digital activity signals to predict when you're actually available.
 
-## Key Features
+## The Concept
 
-- 💬 Extract complete chat histories from Fiverr inbox
-- 📥 Download conversations in clean Markdown and JSON formats
-- 📱 View conversations in a dedicated tab interface
-- 📎 Download all conversation attachments
-- 📚 Track and organize conversation history
-- 💌 Support for message replies and threading
-- ⚡ Fast contact fetching
+Traditional calendars tell people when you *might* be free. Free Right Now tells them when you *actually* are.
 
-## Why Use This Extension?
+- **Checking Gmail?** Probably free for a call.
+- **Pushing commits for 3 hours?** Deep in focus - don't interrupt.
+- **Phone locked for 45 minutes?** Probably in a meeting or away.
 
-- 🔒 **Secure Backup**: Keep your important client conversations safe and accessible
-- 📊 **Better Organization**: Easily manage and search through past communications
-- ⏱️ **Time Saver**: Quick export of conversations
-- 📱 **Accessibility**: Access your conversations offline and across devices
-- 🎯 **Freelancer Focused**: Specifically designed for Fiverr freelancers' needs
+The system watches your activity signals (read-only, privacy-first) and learns your patterns over time. Eventually, it predicts your availability like a personal assistant would - not because it has your calendar, but because it understands what you're actually doing.
 
-## Advanced Features
+## Features
 
-- 🔍 **Smart Search**: Find conversations by keyword, date, or client
-- 📋 **Rich Text Support**: Preserves formatting, links, and emoji
-- 🔄 **Auto-Sync**: Keep your conversation backups up to date
-- 📊 **Analytics Ready**: Export in formats suitable for analysis
-- 🎨 **Custom Formatting**: Choose how your exports look
+- **Signal-Based Detection** - Availability based on actual activity, not calendar blocks
+- **Learning System** - Gets smarter with every feedback response
+- **Daily Review** - Confirm or correct predictions to improve accuracy
+- **Privacy First** - Only sees activity patterns, never content
+- **Confidence Scores** - Know how certain the prediction is
+- **Shareable Status** - Give others a link to check your availability
 
-## Download Organization
+## Screenshots
 
-When you download any file from the extension:
+### Landing Page
+Beautiful, modern landing page explaining the signal-driven concept.
 
-- It will automatically create a folder with the contact's username.
-- Attachments will be stored in an `attachments` subfolder.
-- Conversation files (both markdown and JSON) will be stored in a `conversations` subfolder.
-- All folders will be created automatically by Chrome if they don't exist.
+### Dashboard
+- Real-time status display with confidence scoring
+- Signal feed showing recent activity
+- Daily timeline for review and feedback
+- Integration management
+- Learning progress tracking
 
-The files will be organized like this:
+### Public Status Page
+Clean, focused page showing someone's current availability status.
 
-```
-[Downloads Directory]
-└── [username]
-    ├── attachments
-    │   └── [attachment files]
-    └── conversations
-        ├── fiverr_conversation_[username]_[date].md
-        └── [username]_conversation.json
-```
+## Tech Stack
 
-This structure keeps all files related to a specific contact organized in their own directory, making it easier to manage multiple conversations and their associated files.
+- **Backend**: Node.js + Express
+- **Frontend**: Vanilla JavaScript with modern CSS
+- **Storage**: LocalStorage (demo) / would use database in production
+- **Design**: Dark mode, gradient accents, smooth animations
 
-## Use Cases
+## Getting Started
 
-- 💼 **Portfolio Building**: Extract successful project discussions
-- 📝 **Documentation**: Keep records of project requirements
-- ⚖️ **Dispute Resolution**: Maintain evidence of agreements
-- 📈 **Business Analysis**: Track communication patterns
-- 🎓 **Learning**: Review past successful interactions
+### Prerequisites
 
-## Keywords
-`fiverr-chat-export` `fiverr-message-backup` `Fiverr-inbox-manager` `Fiverr productivity tool` `conversation-extractor` `chat-history-tool` `fiverr-inbox-manager` `freelancer-tools` `client-communication-backup` `message-archiver` `chat-downloader` `fiverr-extension`
+- Node.js 18+
+- npm
 
-## Installation
+### Installation
 
-1. Clone this repository or download the ZIP file
-2. Open Chrome and go to `chrome://extensions/`
-3. Enable "Developer mode" in the top right
-4. Click "Load unpacked" and select the extension directory
+```bash
+# Clone the repository
+git clone <repo-url>
+cd free-right-now
 
-## Usage
+# Install dependencies
+npm install
 
-1. Open your Fiverr inbox
-2. Click the extension icon
-3. Either:
-   - Click "Fetch All Contacts" to see all your conversations
-   - Click "Extract Conversation" when viewing a specific conversation
-4. Use the download button (📥) to save the conversation
-5. Use the view button (📄) to open the conversation in a new tab
-6. Click attachment buttons to download specific files
-
-## Preview
-
-Here's how the extension looks:
-
-![Extension Preview](images/extension-preview.png)
-
-Example contact format:
-```
-joykent838 (13/11/2024)
+# Start the server
+npm start
 ```
 
-For the complete extension UI mockup, see [Extension UI Design](docs/final-popup-mockup.html)
+The app will be running at `http://localhost:3000`
 
-## Permissions
+### Pages
 
-- `activeTab`: To interact with Fiverr tabs
-- `storage`: To store conversation data
-- `scripting`: To inject content scripts
-- `downloads`: To save conversations and attachments
-- `tabs`: To open conversations in new tabs
+- `/` - Landing page
+- `/dashboard` - User dashboard (manage signals, integrations, review)
+- `/u/username` - Public availability status page
 
-## Technical Details
+## How It Works
 
-### Supported Features
-- Message threading and reply chains
-- Attachment handling (images, documents, etc.)
-- Markdown conversion
-- HTML export options
-- JSON data format
-- Error handling and retry mechanisms
+### 1. Connect Your Stack
+Link the tools you use daily:
+- Email (Gmail, Outlook)
+- Code (GitHub, VS Code)
+- Communication (Slack, Discord)
+- Browser activity
+- Phone (iOS/Android)
+- And more...
 
-### Performance
-- Lightweight (<2MB memory usage)
-- Fast contact fetching
-- Efficient storage management
-- Minimal CPU usage
-- Quick search capabilities
+### 2. Signals Are Collected
+The system watches for activity patterns:
+- Email checks → likely free
+- Code commits → deep work
+- Browser activity → browsing
+- Phone unlocked → available
+- Screen idle → away
 
-## Future Updates
+### 3. Predictions Form
+Based on signal patterns and your feedback, the system learns:
+- What activities mean you're interruptible
+- What patterns indicate focus time
+- Your personal rhythms and preferences
 
-- 📱 Mobile version support
-- 🌐 Multi-language support
-- 📊 Advanced analytics dashboard
-- 🔄 Real-time sync capabilities
-- 🤖 AI-powered conversation insights
-- 📦 Bulk export features (coming soon)
+### 4. Share Your Status
+Others can check your availability at your personal URL without having to ask you directly.
 
-## Development
+## Signal Types
 
-The extension uses:
-- Manifest V3
-- Chrome Extension APIs
-- Modern JavaScript (ES6+)
-- Markdown for conversation export
+### Free Signals
+- `email_check` - Checking email
+- `browser_active` - Active browsing
+- `social_media` - On social media
+- `chat_active` - Responding to messages
 
-## Support My Work
+### Busy Signals
+- `code_commit` - Pushing code
+- `ide_active` - In code editor
+- `long_typing` - Extended writing
+- `meeting` - In a meeting
+- `dnd_enabled` - Do Not Disturb on
 
-<div align="center">
-  
-  [!["Buy Me A Coffee"](https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/ianwaithaka)
-  
-  <p>If you find this project helpful, consider buying me a coffee! ☕️</p>
-  
-  <a href="https://www.buymeacoffee.com/ianwaithaka">
-    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="200">
-  </a>
-</div>
+### Away Signals
+- `phone_locked` - Phone inactive
+- `screen_off` - Computer idle
+- `idle` - No activity
+
+## API Endpoints
+
+```
+GET  /api/availability/:username  - Get user's current availability
+POST /api/signals                 - Submit a new signal
+GET  /api/signals/:username       - Get user's recent signals
+POST /api/feedback                - Submit availability feedback
+GET  /api/review/:username        - Get daily review data
+```
+
+## Privacy
+
+Free Right Now is designed with privacy at its core:
+- **Read-only integrations** - We never post, send, or modify anything
+- **No content access** - We see "email was checked" not "what the email said"
+- **Pattern-only analysis** - Activity timestamps, not actual data
+- **User control** - Connect only what you want, disconnect anytime
+
+## Future Roadmap
+
+- [ ] OAuth integrations for real services
+- [ ] Mobile apps (iOS/Android)
+- [ ] Team/organization features
+- [ ] Webhook support
+- [ ] Calendar import (as signals, not restrictions)
+- [ ] AI-powered pattern recognition
+- [ ] Slack/Discord bots
+- [ ] API for third-party integrations
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+**Free Right Now** - Because your availability isn't about time slots. It's about what you're actually doing.

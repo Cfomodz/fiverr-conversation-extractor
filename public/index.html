@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Right Now - Signal-Driven Availability</title>
+  <meta name="description" content="Know when someone is free without interrupting them. Signal-driven availability for the calendar-less life.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <style>
+    /* Page-specific animations */
+    .hero-content > * {
+      opacity: 0;
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+    .hero-content > *:nth-child(1) { animation-delay: 0.1s; }
+    .hero-content > *:nth-child(2) { animation-delay: 0.2s; }
+    .hero-content > *:nth-child(3) { animation-delay: 0.3s; }
+    .hero-content > *:nth-child(4) { animation-delay: 0.4s; }
+    .hero-content > *:nth-child(5) { animation-delay: 0.5s; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="logo-dot"></span>
+        Free Right Now
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#integrations">Integrations</a></li>
+        <li><a href="/dashboard" class="btn btn-primary">Get Started</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-badge">
+          <span class="logo-dot" style="width: 8px; height: 8px;"></span>
+          Say goodbye to calendar chaos
+        </span>
+        
+        <h1>Know When Someone<br>Is Free Right Now</h1>
+        
+        <p class="hero-subtitle">
+          Stop asking "is now a good time?" Signal-driven availability that learns 
+          your patterns and shows others when you're actually free to connect.
+        </p>
+        
+        <div class="hero-buttons">
+          <a href="/dashboard" class="btn btn-primary btn-lg">
+            Start Free
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="#how-it-works" class="btn btn-secondary btn-lg">
+            See How It Works
+          </a>
+        </div>
+        
+        <div class="status-indicator">
+          <div class="status-dot free"></div>
+          <div>
+            <div class="status-text">Sarah is free right now</div>
+            <div class="status-meta">92% confident - based on recent activity</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="section features">
+    <div class="container">
+      <div class="features-header">
+        <h2>Not Another Calendar.<br>Something <span class="text-gradient">Smarter</span>.</h2>
+        <p>Your availability isn't about time slots. It's about what you're actually doing.</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📡</div>
+          <h3>Signal-Based Detection</h3>
+          <p>Browsing email? You're probably free. Deep in code for 3 hours? Probably not. We read the signals, not a rigid calendar.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🧠</div>
+          <h3>Learns Your Patterns</h3>
+          <p>No two people are the same. The system learns when YOU are typically free based on your actual behavior patterns.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Privacy First</h3>
+          <p>We only see activity signals, never content. Your emails, messages, and code stay private. Just the patterns matter.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3>Confidence Scores</h3>
+          <p>Not just "free" or "busy" - get confidence levels so you know whether to call, text, or wait for a better moment.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Daily Review</h3>
+          <p>At day's end, confirm or correct predictions. "Should I have marked you busy at 4pm?" Your feedback makes it smarter.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔗</div>
+          <h3>Share Your Status</h3>
+          <p>Give colleagues a simple link. They see your availability without needing to ask or interrupt your flow.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="section how-it-works">
+    <div class="container">
+      <div class="features-header">
+        <h2>How It Works</h2>
+        <p>From calendar chaos to effortless availability in four simple steps.</p>
+      </div>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Connect Your Stack</h3>
+            <p>Link the tools you actually use - email, browser, IDE, phone, Discord. All read-only, all optional. The more signals, the smarter the predictions.</p>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Teach As You Go</h3>
+            <p>During the learning phase, you'll occasionally confirm your availability. "Was marking you busy from 2-4pm correct?" This training builds your personal model.</p>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Watch It Learn</h3>
+            <p>As confidence builds, the system starts predicting your availability automatically. Like a personal assistant who understands your rhythms.</p>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>Share Your Link</h3>
+            <p>Others can check your status anytime at your personal URL. No more "is now a good time?" texts. They'll already know.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Integrations Section -->
+  <section id="integrations" class="section integrations">
+    <div class="container">
+      <div class="integrations-header">
+        <h2>Connect What You Use</h2>
+        <p>Your tech stack becomes your availability signal. All integrations are read-only.</p>
+      </div>
+      
+      <div class="integrations-grid">
+        <div class="integration-badge">
+          <span class="integration-icon">📧</span>
+          Gmail
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">💻</span>
+          GitHub
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">💬</span>
+          Slack
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">🎮</span>
+          Discord
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">🌐</span>
+          Browser Activity
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">📱</span>
+          Phone (iOS/Android)
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">📅</span>
+          Google Calendar
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">🎵</span>
+          Spotify
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">⌨️</span>
+          VS Code
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">🖥️</span>
+          Screen Time
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">📍</span>
+          Location (optional)
+        </div>
+        <div class="integration-badge">
+          <span class="integration-icon">✨</span>
+          + More coming
+        </div>
+      </div>
+      
+      <p class="text-center" style="color: var(--text-muted); font-size: 0.875rem;">
+        We only see activity timestamps and patterns. Your actual content always stays private.
+      </p>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="section cta">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Ready for the Calendar-less Life?</h2>
+        <p>Stop scheduling. Start signaling. Let your activity speak for your availability.</p>
+        <a href="/dashboard" class="btn btn-primary btn-lg">
+          Get Started Free
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>
+        <span class="logo-dot" style="width: 8px; height: 8px; display: inline-block; vertical-align: middle; margin-right: 8px;"></span>
+        Free Right Now - Signal-driven availability for humans, not calendars.
+      </p>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

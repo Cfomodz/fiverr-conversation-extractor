@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading... - Free Right Now</title>
+  <meta name="description" content="Check availability status in real-time">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Check My Availability">
+  <meta property="og:description" content="See if I'm free right now - powered by Free Right Now">
+  <meta property="og:type" content="website">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/status.css">
+</head>
+<body>
+  <main class="status-page" id="status-page">
+    <div class="status-container">
+      <!-- Loading State -->
+      <div class="loading-container" id="loading-state">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Checking availability...</p>
+      </div>
+
+      <!-- Main Content (hidden initially) -->
+      <div id="main-content" style="display: none;">
+        <!-- User Card -->
+        <div class="user-card">
+          <div class="user-card-avatar" id="status-avatar">U</div>
+          <h1 class="user-card-name" id="status-name">Username</h1>
+          <p class="user-card-bio" id="status-bio">Signal-driven availability</p>
+        </div>
+
+        <!-- Status Display -->
+        <div class="status-display">
+          <div class="status-orb-container">
+            <div class="status-orb-large" id="status-orb-main">
+              <span class="status-orb-icon" id="status-icon-main">❓</span>
+            </div>
+          </div>
+          
+          <h2 class="status-text-main" id="status-text-main">Checking...</h2>
+          <p class="status-text-sub" id="status-text-sub">Analyzing availability signals</p>
+          
+          <div class="status-confidence">
+            <div class="confidence-bar-mini">
+              <div class="confidence-bar-mini-fill" id="confidence-fill-mini" style="width: 0%"></div>
+            </div>
+            <span class="confidence-text-mini" id="confidence-text-mini">0% confident</span>
+          </div>
+        </div>
+
+        <!-- Contact Options -->
+        <div class="contact-options">
+          <p class="contact-header">Reach out via</p>
+          <div class="contact-buttons" id="contact-buttons">
+            <a href="#" class="contact-btn" id="btn-email">
+              <span class="contact-icon">📧</span>
+              Email
+            </a>
+            <a href="#" class="contact-btn" id="btn-call">
+              <span class="contact-icon">📞</span>
+              Call
+            </a>
+            <a href="#" class="contact-btn" id="btn-message">
+              <span class="contact-icon">💬</span>
+              Message
+            </a>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations" id="recommendations">
+          <div class="recommendation-card">
+            <div class="recommendation-header">
+              <span class="recommendation-icon">💡</span>
+              <span class="recommendation-title">Recommendation</span>
+            </div>
+            <ul class="recommendation-list" id="recommendation-list">
+              <li><span class="check">✓</span> Great time for a quick call</li>
+              <li><span class="check">✓</span> Email will be seen soon</li>
+              <li><span class="maybe-icon">~</span> Text might work too</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Last Updated -->
+        <p class="last-updated">
+          Last updated: <span id="last-updated">just now</span>
+        </p>
+      </div>
+
+      <!-- Error State (hidden) -->
+      <div class="error-container" id="error-state" style="display: none;">
+        <div class="error-icon">🔍</div>
+        <h2 class="error-title">User Not Found</h2>
+        <p class="error-message">This availability link doesn't exist or has been deactivated.</p>
+      </div>
+
+      <!-- Footer -->
+      <footer class="status-footer">
+        <a href="/">
+          <span class="logo-dot"></span>
+          Powered by Free Right Now
+        </a>
+      </footer>
+    </div>
+  </main>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/status.js"></script>
+</body>
+</html>

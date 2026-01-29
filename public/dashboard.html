@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Free Right Now</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">
+        <span class="logo-dot"></span>
+        Free Right Now
+      </a>
+      <ul class="nav-links">
+        <li><a href="/dashboard">Dashboard</a></li>
+        <li><a href="#" id="view-public-link">My Public Link</a></li>
+        <li><a href="#" id="settings-link">Settings</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="dashboard">
+    <div class="container">
+      <!-- Header -->
+      <div class="dashboard-header">
+        <div class="dashboard-title">
+          <div class="user-info">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div class="user-details">
+              <h1 id="user-name">Welcome!</h1>
+              <div class="user-link">
+                Your link: <code id="user-public-link">frn.app/u/username</code>
+                <button class="copy-btn" id="copy-link-btn" title="Copy link">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="quick-actions">
+            <button class="quick-action-btn" id="mark-free-btn">
+              <span class="quick-action-icon">🟢</span>
+              <span class="quick-action-label">I'm Free</span>
+            </button>
+            <button class="quick-action-btn" id="mark-busy-btn">
+              <span class="quick-action-icon">🔴</span>
+              <span class="quick-action-label">I'm Busy</span>
+            </button>
+            <button class="quick-action-btn" id="simulate-btn">
+              <span class="quick-action-icon">⚡</span>
+              <span class="quick-action-label">Simulate</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Status -->
+      <div class="status-card-large" id="status-card">
+        <div class="status-orb" id="status-orb">
+          <span class="status-orb-icon" id="status-icon">❓</span>
+        </div>
+        <div class="status-details">
+          <div class="status-label">Current Status</div>
+          <h2 class="status-title" id="status-title">Analyzing...</h2>
+          <p class="status-message" id="status-message">Collecting signals to determine your availability</p>
+          <div class="confidence-bar">
+            <div class="confidence-fill" id="confidence-fill" style="width: 0%"></div>
+          </div>
+          <p class="confidence-text" id="confidence-text">0% confidence</p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-signals">0</div>
+          <div class="stat-label">Signals Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value free" id="stat-free-time">0h</div>
+          <div class="stat-label">Free Time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value busy" id="stat-focus-time">0h</div>
+          <div class="stat-label">Focus Time</div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="dashboard-grid">
+        <!-- Left Column -->
+        <div>
+          <!-- Signal Feed -->
+          <div class="panel" style="margin-bottom: var(--space-xl);">
+            <div class="panel-header">
+              <h3 class="panel-title">
+                <span>📡</span>
+                Recent Signals
+              </h3>
+              <span style="font-size: 0.75rem; color: var(--text-muted);" id="signal-count">0 signals</span>
+            </div>
+            <div class="panel-body signal-feed" id="signal-feed">
+              <div class="empty-state">
+                <div class="empty-state-icon">📡</div>
+                <p class="empty-state-text">No signals yet. Connect integrations or simulate activity.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Daily Review -->
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">
+                <span>📊</span>
+                Today's Timeline
+              </h3>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Review & correct</span>
+            </div>
+            <div class="panel-body">
+              <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: var(--space-lg);">
+                Click any block to confirm or correct the prediction. This helps improve accuracy.
+              </p>
+              <div class="time-blocks" id="time-blocks">
+                <!-- Time blocks will be rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+          <!-- Integrations -->
+          <div class="panel" style="margin-bottom: var(--space-xl);">
+            <div class="panel-header">
+              <h3 class="panel-title">
+                <span>🔗</span>
+                Integrations
+              </h3>
+            </div>
+            <div class="panel-body">
+              <div class="integrations-list" id="integrations-list">
+                <!-- Integration items -->
+                <div class="integration-item" data-integration="gmail">
+                  <div class="integration-item-icon">📧</div>
+                  <div class="integration-item-info">
+                    <div class="integration-item-name">Gmail</div>
+                    <div class="integration-item-status">Click to connect</div>
+                  </div>
+                  <div class="toggle-switch" data-connected="false"></div>
+                </div>
+                
+                <div class="integration-item" data-integration="github">
+                  <div class="integration-item-icon">💻</div>
+                  <div class="integration-item-info">
+                    <div class="integration-item-name">GitHub</div>
+                    <div class="integration-item-status">Click to connect</div>
+                  </div>
+                  <div class="toggle-switch" data-connected="false"></div>
+                </div>
+                
+                <div class="integration-item" data-integration="slack">
+                  <div class="integration-item-icon">💬</div>
+                  <div class="integration-item-info">
+                    <div class="integration-item-name">Slack</div>
+                    <div class="integration-item-status">Click to connect</div>
+                  </div>
+                  <div class="toggle-switch" data-connected="false"></div>
+                </div>
+                
+                <div class="integration-item" data-integration="discord">
+                  <div class="integration-item-icon">🎮</div>
+                  <div class="integration-item-info">
+                    <div class="integration-item-name">Discord</div>
+                    <div class="integration-item-status">Click to connect</div>
+                  </div>
+                  <div class="toggle-switch" data-connected="false"></div>
+                </div>
+                
+                <div class="integration-item" data-integration="browser">
+                  <div class="integration-item-icon">🌐</div>
+                  <div class="integration-item-info">
+                    <div class="integration-item-name">Browser</div>
+                    <div class="integration-item-status">Click to connect</div>
+                  </div>
+                  <div class="toggle-switch" data-connected="false"></div>
+                </div>
+                
+                <div class="integration-item" data-integration="vscode">
+                  <div class="integration-item-icon">⌨️</div>
+                  <div class="integration-item-info">
+                    <div class="integration-item-name">VS Code</div>
+                    <div class="integration-item-status">Click to connect</div>
+                  </div>
+                  <div class="toggle-switch" data-connected="false"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Learning Progress -->
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">
+                <span>🧠</span>
+                Learning Progress
+              </h3>
+            </div>
+            <div class="panel-body">
+              <div style="margin-bottom: var(--space-lg);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                  <span style="font-size: 0.875rem; color: var(--text-secondary);">Model Accuracy</span>
+                  <span style="font-size: 0.875rem; font-weight: 600;" id="accuracy-value">Learning...</span>
+                </div>
+                <div class="confidence-bar" style="max-width: 100%;">
+                  <div class="confidence-fill free" id="accuracy-fill" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <div style="font-size: 0.875rem; color: var(--text-muted);">
+                <p style="margin-bottom: var(--space-sm);">
+                  <strong id="feedback-count">0</strong> feedback responses collected
+                </p>
+                <p>
+                  The more you use Free Right Now and provide feedback, the better it predicts your availability.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Review Modal -->
+  <div class="modal-overlay" id="review-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Review This Time Block</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: var(--space-lg); color: var(--text-secondary);">
+          Was the prediction for <strong id="review-time">12:00 PM</strong> correct?
+        </p>
+        
+        <div class="form-group">
+          <label class="form-label">Predicted Status</label>
+          <div id="review-predicted" style="font-weight: 600;"></div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">What was your actual status?</label>
+          <select class="form-input form-select" id="review-actual">
+            <option value="free">Free - Available for calls/messages</option>
+            <option value="maybe">Maybe - Could be interrupted briefly</option>
+            <option value="busy">Busy - In deep focus mode</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Notes (optional)</label>
+          <input type="text" class="form-input" id="review-notes" placeholder="E.g., 'Was in a meeting'">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="modal-submit">Submit Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
