@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Free Right Now - Signal-driven availability</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="logo">Free Right Now</div>
+      <nav class="nav">
+        <a href="#demo">Live demo</a>
+        <a href="#how">How it works</a>
+        <a href="#signals">Signals</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <button class="button small primary" id="headerWaitlist" type="button">Join waitlist</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Signal-driven availability</p>
+          <h1>Are you free right now?</h1>
+          <p class="lead">
+            Free Right Now is a deliberate alternative to scheduling links.
+            It infers availability from read-only signals so people can reach you
+            without interrupting you to ask.
+          </p>
+          <div class="hero-actions">
+            <button class="button primary" id="heroDemo" type="button">See the live demo</button>
+            <button class="button secondary" id="heroWaitlist" type="button">Join the waitlist</button>
+          </div>
+          <div class="hero-points">
+            <div>
+              <h4>No calendar required</h4>
+              <p>Availability is inferred from activity, not blocks.</p>
+            </div>
+            <div>
+              <h4>Learn your rules</h4>
+              <p>Daily confirmation trains the model to match your rhythm.</p>
+            </div>
+            <div>
+              <h4>Share the right channel</h4>
+              <p>Call, text, or email guidance updates automatically.</p>
+            </div>
+          </div>
+        </div>
+        <div class="status-card card" id="statusCard" data-tone="good">
+          <div class="card-header">
+            <span class="card-title">Availability estimate</span>
+            <span class="badge good" id="statusBadge">Free right now</span>
+          </div>
+          <div class="score">
+            <span id="statusScore">76</span><span class="unit">%</span>
+          </div>
+          <div class="meter">
+            <div class="meter-fill" id="statusMeter"></div>
+          </div>
+          <p class="status-message" id="statusMessage">Signals suggest you are interruptible and responsive.</p>
+          <div class="meta-row">
+            <div>
+              <span class="meta-label">Confidence</span>
+              <span id="confidenceScore">64%</span>
+            </div>
+            <div>
+              <span class="meta-label">Best channel</span>
+              <span id="bestChannel">Text</span>
+            </div>
+          </div>
+          <div class="confidence-meter">
+            <div class="confidence-fill" id="confidenceMeter"></div>
+          </div>
+          <p class="meta-foot">Last updated <span id="lastUpdated">just now</span></p>
+        </div>
+      </section>
+
+      <section id="demo" class="demo">
+        <div class="section-header">
+          <h2>Live availability demo</h2>
+          <p>Toggle signals to see how Free Right Now estimates availability and recommends the right channel.</p>
+        </div>
+        <div class="demo-grid">
+          <div class="card signals-card">
+            <div class="card-header">
+              <h3>Signals</h3>
+              <span class="meta-pill"><span id="activeCount">0</span> active</span>
+            </div>
+            <p class="card-subtitle">These are read-only signals like Gmail activity, phone unlocks, and coding sessions.</p>
+            <div id="signalList" class="signal-list"></div>
+            <div class="slider-card">
+              <label for="sensitivity">Availability sensitivity</label>
+              <input type="range" id="sensitivity" min="0" max="100" value="50">
+              <div class="slider-meta">
+                <span>Conservative</span>
+                <span id="sensitivityLabel">Balanced</span>
+                <span>Open</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card insights-card">
+            <h3>What others see</h3>
+            <div class="channels">
+              <div class="channel-card" id="channel-call" data-tone="hold">
+                <h4>Call</h4>
+                <p class="channel-status" id="channel-call-status">Hold</p>
+                <p class="channel-note" id="channel-call-note">Signals suggest a delay.</p>
+              </div>
+              <div class="channel-card" id="channel-text" data-tone="maybe">
+                <h4>Text</h4>
+                <p class="channel-status" id="channel-text-status">Maybe</p>
+                <p class="channel-note" id="channel-text-note">Send if needed, expect a delay.</p>
+              </div>
+              <div class="channel-card" id="channel-email" data-tone="good">
+                <h4>Email</h4>
+                <p class="channel-status" id="channel-email-status">Ok to send</p>
+                <p class="channel-note" id="channel-email-note">Safe for async follow up.</p>
+              </div>
+              <div class="channel-card" id="channel-async" data-tone="good">
+                <h4>Async task</h4>
+                <p class="channel-status" id="channel-async-status">Green light</p>
+                <p class="channel-note" id="channel-async-note">Queue it up with no rush.</p>
+              </div>
+            </div>
+            <div class="why">
+              <h4>Why this estimate</h4>
+              <ul id="whyList"></ul>
+            </div>
+            <div class="review">
+              <h4>Daily review</h4>
+              <p>At the end of the day, confirm whether the availability was right. That feedback builds the rules.</p>
+              <div class="review-actions">
+                <button class="button tertiary" id="reviewYes" type="button">Yes, that was right</button>
+                <button class="button tertiary" id="reviewNo" type="button">Not quite</button>
+              </div>
+              <p class="review-feedback" id="reviewFeedback"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" class="steps">
+        <div class="section-header">
+          <h2>How it works</h2>
+          <p>Signal driven availability turns real behavior into a live status card.</p>
+        </div>
+        <div class="step-grid">
+          <div class="card step-card">
+            <h3>1. Connect signals</h3>
+            <p>Link the tools you already use. Everything is read-only and optional.</p>
+          </div>
+          <div class="card step-card">
+            <h3>2. Confirm daily</h3>
+            <p>Answer quick check-ins. The system learns when you are interruptible.</p>
+          </div>
+          <div class="card step-card">
+            <h3>3. Share availability</h3>
+            <p>People see a confidence score and the best channel to use right now.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="signals" class="signals">
+        <div class="section-header">
+          <h2>Signals, not schedules</h2>
+          <p>Examples of signals that shape the availability estimate.</p>
+        </div>
+        <div class="signal-grid">
+          <div class="card">
+            <h3>Email activity</h3>
+            <p>Checking inbox or sending replies usually means light interruptions are ok.</p>
+          </div>
+          <div class="card">
+            <h3>Chat presence</h3>
+            <p>Green status on chat tools hints that quick pings are welcome.</p>
+          </div>
+          <div class="card">
+            <h3>Browser focus</h3>
+            <p>No browser activity for an hour can signal deep work.</p>
+          </div>
+          <div class="card">
+            <h3>Code activity</h3>
+            <p>Long coding streaks reduce call readiness until you surface.</p>
+          </div>
+          <div class="card">
+            <h3>Phone unlocks</h3>
+            <p>Recent unlocks are a soft signal of availability for text.</p>
+          </div>
+          <div class="card">
+            <h3>Calendar events</h3>
+            <p>Optional meeting detection can block calls while still allowing async.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="principles">
+        <div class="section-header">
+          <h2>Privacy and control</h2>
+          <p>You decide what to connect, what to share, and when to override.</p>
+        </div>
+        <div class="principle-grid">
+          <div class="card">
+            <h3>Read-only integrations</h3>
+            <p>No message content is stored. Only activity signals are used.</p>
+          </div>
+          <div class="card">
+            <h3>Manual override</h3>
+            <p>Force a free or busy state when your day is unusual.</p>
+          </div>
+          <div class="card">
+            <h3>Human review</h3>
+            <p>Daily check-ins keep the model honest and aligned with you.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="faq">
+        <div class="section-header">
+          <h2>FAQ</h2>
+        </div>
+        <div class="faq-grid">
+          <details>
+            <summary>How is this different from cal.com or Calendly?</summary>
+            <p>Calendars schedule future slots. Free Right Now answers a live question: is now a good time? It is a complement to scheduling, not a replacement for long-term planning.</p>
+          </details>
+          <details>
+            <summary>Do I have to share everything?</summary>
+            <p>No. Each signal is optional. The app gets smarter as you connect more signals, but you stay in control.</p>
+          </details>
+          <details>
+            <summary>Does it read my messages or code?</summary>
+            <p>No. It only uses presence and activity signals like "active", "idle", or "last seen".</p>
+          </details>
+          <details>
+            <summary>How does it learn my rules?</summary>
+            <p>The daily review confirms what was right or wrong. Over time the model learns your personal availability patterns.</p>
+          </details>
+        </div>
+      </section>
+
+      <section id="waitlist" class="cta">
+        <div class="cta-card">
+          <div>
+            <h2>Replace calendar links with live availability</h2>
+            <p>Share your status card so people can reach you without the interrupt-and-wait loop.</p>
+          </div>
+          <form id="waitlistForm" class="waitlist-form">
+            <label for="email">Work email</label>
+            <div class="form-row">
+              <input type="email" id="email" name="email" placeholder="you@company.com" required>
+              <button class="button primary" type="submit">Join waitlist</button>
+            </div>
+            <p class="form-note" id="formNote">We will only use this to contact you about the launch.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>Free Right Now</strong>
+        <span>Signal-driven availability, not calendar links.</span>
+      </div>
+      <div>
+        <a href="#demo">Live demo</a>
+        <a href="#signals">Signals</a>
+        <a href="#waitlist">Waitlist</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
